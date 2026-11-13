@@ -23,7 +23,7 @@ export default function PostForm({ onCreated }) {
       onCreated(post);
       setContent('');
       setImg({ file: null, url: '' });
-      notify('Status diterbitkan.', 'success');
+      notify('Status diunggah.', 'success');
     } catch (err) {
       notify(err.message, 'error');
     } finally {

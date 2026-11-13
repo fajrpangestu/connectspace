@@ -39,6 +39,9 @@ export const api = {
   updatePost: (id, form) => request(`/posts/${id}`, { method: 'PUT', form }),
   updateComment: (id, cid, form) => request(`/posts/${id}/comments/${cid}`, { method: 'PUT', form }),
   deleteComment: (id, cid) => request(`/posts/${id}/comments/${cid}`, { method: 'DELETE' }),
+  likeComment: (id, cid) => request(`/posts/${id}/comments/${cid}/like`, { method: 'POST' }),
+  user: (id) => request(`/users/${id}`),
+  userPosts: (id) => request(`/users/${id}/posts`),
 };
 
 // Bentuk FormData; field kosong dilewati.
