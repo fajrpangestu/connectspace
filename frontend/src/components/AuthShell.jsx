@@ -6,7 +6,7 @@ export default function AuthShell({ title, subtitle, children, footer }) {
       <aside className="hidden flex-col justify-between bg-ink p-12 text-white lg:flex">
         <Logo light />
         <div className="max-w-md space-y-4">
-          <h2 className="text-4xl font-extrabold leading-tight">Satu ruang untuk semua kabar tim.</h2>
+          <h2 className="text-4xl font-extrabold leading-tight">Satu ruang untuk saling berbagi kabar.</h2>
           <p className="text-lg text-white/70">
             Bagikan status, balas dengan gambar, dan lihat siapa yang sedang membicarakan apa, tanpa harus mencari di grup chat.
           </p>
