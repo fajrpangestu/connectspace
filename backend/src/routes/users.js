@@ -42,7 +42,7 @@ router.get(
   wrap(async (req, res) => {
     const id = toId(req.params.id);
     const [rows] = await pool.execute(
-      `SELECT p.id, p.user_id, p.content, p.image, p.created_at, p.updated_at,
+      `SELECT p.id, p.user_id, p.content, p.image, p.location, p.created_at, p.updated_at,
               u.name AS author_name, u.avatar AS author_avatar,
               (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id)    AS like_count,
               (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS comment_count,
@@ -60,6 +60,7 @@ router.get(
         user_id: r.user_id,
         content: r.content,
         image: r.image,
+        location: r.location,
         created_at: r.created_at,
         updated_at: r.updated_at,
         author: { id: r.user_id, name: r.author_name, avatar: r.author_avatar },

@@ -8,6 +8,7 @@ import ConfirmDialog from './ConfirmDialog.jsx';
 import EditBox from './EditBox.jsx';
 import ImagePicker from './ImagePicker.jsx';
 import { HeartIcon, PencilIcon, ReplyIcon, TrashIcon } from './Icons.jsx';
+const MAX_CHARS = 500;
 
 // Form kirim komentar (parentId = null) atau balasan (parentId = id komentar induk)
 function CommentForm({ postId, parentId = null, initialText = '', placeholder, autoFocus = false, onDone, onCancel }) {
@@ -16,8 +17,12 @@ function CommentForm({ postId, parentId = null, initialText = '', placeholder, a
   const [img, setImg] = useState({ file: null, url: '' });
   const [sending, setSending] = useState(false);
 
+  const length = text.trim().length;
+  const tooLong = length > MAX_CHARS;
+
   const submit = async (e) => {
     e.preventDefault();
+    if (tooLong) return notify(`Teks maksimal ${MAX_CHARS} karakter.`, 'warning');
     const hasImage = img.file || img.url.trim();
     if ((!text.trim() || text.trim() === initialText.trim()) && !hasImage) {
       return notify('Tulis komentar atau lampirkan gambar.', 'warning');
@@ -42,19 +47,27 @@ function CommentForm({ postId, parentId = null, initialText = '', placeholder, a
     <form onSubmit={submit} className="space-y-2">
       <div className="flex gap-2">
         <input
-          className="input"
+          className={`input ${tooLong ? 'input-error' : ''}`}
           placeholder={placeholder}
           value={text}
-          maxLength={1000}
           autoFocus={autoFocus}
           onChange={(e) => setText(e.target.value)}
           aria-label={placeholder}
+          aria-invalid={tooLong}
         />
-        <button className="btn-primary" disabled={sending}>{sending ? 'Mengirim…' : 'Kirim'}</button>
+        <button className="btn-primary" disabled={sending || tooLong} title={tooLong ? `Maksimal ${MAX_CHARS} karakter` : undefined}>
+          {sending ? 'Mengirim…' : 'Kirim'}
+        </button>
         {onCancel && (
           <button type="button" className="btn-outline" onClick={onCancel} disabled={sending}>Batal</button>
         )}
       </div>
+      {(length > MAX_CHARS * 0.9 || tooLong) && (
+        <p className={`text-xs font-semibold ${tooLong ? 'text-heart' : 'text-amber-600'}`} aria-live="polite" role={tooLong ? 'alert' : undefined}>
+          {length}/{MAX_CHARS}
+          {tooLong && ` · terlalu panjang, kurangi ${length - MAX_CHARS} karakter`}
+        </p>
+      )}
       <ImagePicker value={img} onChange={setImg} onError={(m) => notify(m, 'error')} label="Gambar" />
     </form>
   );
@@ -93,6 +106,7 @@ function CommentItem({ c, isReply, meId, editingId, setEditingId, onSaveEdit, on
               <EditBox
                 textField="comment"
                 multiline={false}
+                limit={MAX_CHARS}
                 initialText={c.comment}
                 currentImage={c.image}
                 onSave={(form) => onSaveEdit(c.id, form)}

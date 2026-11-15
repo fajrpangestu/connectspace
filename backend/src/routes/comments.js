@@ -51,7 +51,7 @@ router.post(
     const comment = String(req.body.comment ?? '').trim();
     const img = resolveImage(req, 'image_url');
     if (img.error) throw new HttpError(422, img.error, { image: img.error });
-    if (comment.length > 1000) throw new HttpError(422, 'Komentar maksimal 1000 karakter');
+    if (comment.length > 500) throw new HttpError(422, 'Komentar maksimal 500 karakter');
     if (!comment && !img.value) throw new HttpError(422, 'Komentar tidak boleh kosong: isi teks atau lampirkan gambar');
 
     const [post] = await pool.execute('SELECT id FROM posts WHERE id = ?', [postId]);

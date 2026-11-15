@@ -42,6 +42,7 @@ export const api = {
   likeComment: (id, cid) => request(`/posts/${id}/comments/${cid}/like`, { method: 'POST' }),
   user: (id) => request(`/users/${id}`),
   userPosts: (id) => request(`/users/${id}/posts`),
+  reverseGeocode: (lat, lng) => request(`/geo/reverse?lat=${lat}&lng=${lng}`),
 };
 
 // Bentuk FormData; field kosong dilewati.

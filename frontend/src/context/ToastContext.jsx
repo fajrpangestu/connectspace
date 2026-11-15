@@ -16,7 +16,7 @@ export function ToastProvider({ children }) {
   const notify = useCallback((message, type = 'info') => {
     const id = crypto.randomUUID();
     setToasts((t) => [...t, { id, message, type }]);
-    setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), 4500);
+    setTimeout(() => setToasts((t) => t.filter((x) => x.id !== id)), message.length > 80 ? 9000 : 4500);
   }, []);
 
   return (

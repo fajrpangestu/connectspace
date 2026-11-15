@@ -1,7 +1,7 @@
 import { pool } from './db.js';
 
 // Migrasi otomatis & idempotent: aman dijalankan setiap server start.
-// Menambahkan fitur balasan komentar (comments.parent_id) dan like komentar (comment_likes).
+// Menambahkan: balasan komentar (comments.parent_id), like komentar (comment_likes), lokasi postingan (posts.location).
 export async function ensureSchema() {
   const [cols] = await pool.query(
     `SELECT COUNT(*) AS n FROM information_schema.COLUMNS
@@ -16,6 +16,16 @@ export async function ensureSchema() {
            REFERENCES comments (id) ON DELETE CASCADE`
     );
     console.log('Migrasi: kolom comments.parent_id ditambahkan');
+  }
+
+  // Lokasi opsional pada postingan
+  const [loc] = await pool.query(
+    `SELECT COUNT(*) AS n FROM information_schema.COLUMNS
+     WHERE TABLE_SCHEMA = DATABASE() AND TABLE_NAME = 'posts' AND COLUMN_NAME = 'location'`
+  );
+  if (!Number(loc[0].n)) {
+    await pool.query(`ALTER TABLE posts ADD COLUMN location VARCHAR(100) NULL AFTER image`);
+    console.log('Migrasi: kolom posts.location ditambahkan');
   }
 
   await pool.query(

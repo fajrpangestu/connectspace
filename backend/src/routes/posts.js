@@ -8,7 +8,7 @@ const router = Router();
 router.use(requireAuth);
 
 const POST_SELECT = `
-  SELECT p.id, p.user_id, p.content, p.image, p.created_at, p.updated_at,
+  SELECT p.id, p.user_id, p.content, p.image, p.location, p.created_at, p.updated_at,
          u.name AS author_name, u.avatar AS author_avatar,
          (SELECT COUNT(*) FROM likes l WHERE l.post_id = p.id)    AS like_count,
          (SELECT COUNT(*) FROM comments c WHERE c.post_id = p.id) AS comment_count,
@@ -21,6 +21,7 @@ const shapePost = (r) => ({
   user_id: r.user_id,
   content: r.content,
   image: r.image,
+  location: r.location,
   created_at: r.created_at,
   updated_at: r.updated_at,
   author: { id: r.user_id, name: r.author_name, avatar: r.author_avatar },
@@ -28,6 +29,13 @@ const shapePost = (r) => ({
   comment_count: Number(r.comment_count),
   liked: Boolean(r.liked),
 });
+
+// Lokasi opsional, maksimal 100 karakter
+function parseLocation(raw) {
+  const loc = String(raw ?? '').trim();
+  if (loc.length > 100) throw new HttpError(422, 'Lokasi maksimal 100 karakter', { location: 'Lokasi maksimal 100 karakter' });
+  return loc || null;
+}
 
 // Feed: terbaru di atas
 router.get(
@@ -47,17 +55,19 @@ router.post(
     const content = String(req.body.content ?? '').trim();
     const img = resolveImage(req, 'image_url');
     if (img.error) throw new HttpError(422, img.error, { image: img.error });
-    if (content.length > 5000) throw new HttpError(422, 'Teks maksimal 5000 karakter', { content: 'Teks maksimal 5000 karakter' });
+    if (content.length > 500) throw new HttpError(422, 'Teks maksimal 500 karakter', { content: 'Teks maksimal 500 karakter' });
     if (!content && !img.value) {
       throw new HttpError(422, 'Status tidak boleh kosong: isi teks atau lampirkan gambar', {
         content: 'Isi teks atau lampirkan gambar',
       });
     }
 
-    const [result] = await pool.execute('INSERT INTO posts (user_id, content, image) VALUES (?, ?, ?)', [
+    const location = parseLocation(req.body.location);
+    const [result] = await pool.execute('INSERT INTO posts (user_id, content, image, location) VALUES (?, ?, ?, ?)', [
       req.session.userId,
       content || null,
       img.value,
+      location,
     ]);
     const [rows] = await pool.execute(`${POST_SELECT} WHERE p.id = ?`, [req.session.userId, result.insertId]);
     res.status(201).json({ post: shapePost(rows[0]) });
@@ -71,12 +81,12 @@ router.put(
   wrap(async (req, res) => {
     const id = toId(req.params.id);
     const uid = req.session.userId;
-    const [rows] = await pool.execute('SELECT user_id, image FROM posts WHERE id = ?', [id]);
+    const [rows] = await pool.execute('SELECT user_id, image, location FROM posts WHERE id = ?', [id]);
     if (!rows.length) throw new HttpError(404, 'Postingan tidak ditemukan');
     if (rows[0].user_id !== uid) throw new HttpError(403, 'Anda tidak berhak mengedit postingan ini');
 
     const content = String(req.body.content ?? '').trim();
-    if (content.length > 5000) throw new HttpError(422, 'Teks maksimal 5000 karakter');
+    if (content.length > 500) throw new HttpError(422, 'Teks maksimal 500 karakter');
 
     let image = rows[0].image;
     const img = resolveImage(req, 'image_url');
@@ -86,9 +96,13 @@ router.put(
 
     if (!content && !image) throw new HttpError(422, 'Status tidak boleh kosong: isi teks atau lampirkan gambar');
 
-    await pool.execute('UPDATE posts SET content = ?, image = ?, updated_at = NOW() WHERE id = ?', [
+    // location tidak dikirim = biarkan; dikirim kosong = hapus lokasi
+    const location = req.body.location === undefined ? rows[0].location : parseLocation(req.body.location);
+
+    await pool.execute('UPDATE posts SET content = ?, image = ?, location = ?, updated_at = NOW() WHERE id = ?', [
       content || null,
       image,
+      location,
       id,
     ]);
     if (image !== rows[0].image) removeLocalImage(rows[0].image);

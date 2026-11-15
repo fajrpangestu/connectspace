@@ -11,6 +11,7 @@ import profileRoutes from './routes/profile.js';
 import postRoutes from './routes/posts.js';
 import commentRoutes from './routes/comments.js';
 import userRoutes from './routes/users.js';
+import geoRoutes from './routes/geo.js';
 import { ensureSchema } from './migrate.js';
 
 const MySQLStore = MySQLStoreFactory(session);
@@ -47,6 +48,7 @@ app.use('/api/profile', profileRoutes);
 app.use('/api/posts', postRoutes);
 app.use('/api/posts', commentRoutes);
 app.use('/api/users', userRoutes);
+app.use('/api/geo', geoRoutes);
 app.use(notFound);
 app.use(errorHandler);
 

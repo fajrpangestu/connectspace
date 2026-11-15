@@ -48,3 +48,10 @@ export const ReplyIcon = () => (
     <path d="M4 9h10a6 6 0 0 1 6 6v3" />
   </svg>
 );
+
+export const PinIcon = () => (
+  <svg {...base} width="12" height="12">
+    <path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z" />
+    <circle cx="12" cy="10" r="3" />
+  </svg>
+);

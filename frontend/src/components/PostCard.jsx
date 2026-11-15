@@ -7,7 +7,7 @@ import Avatar from './Avatar.jsx';
 import CommentSection from './CommentSection.jsx';
 import ConfirmDialog from './ConfirmDialog.jsx';
 import EditBox from './EditBox.jsx';
-import { PencilIcon, TrashIcon } from './Icons.jsx';
+import { PencilIcon, PinIcon, TrashIcon } from './Icons.jsx';
 
 export default function PostCard({ post, onChange, onDelete }) {
   const { user } = useAuth();
@@ -64,9 +64,22 @@ export default function PostCard({ post, onChange, onDelete }) {
               <Link to={`/u/${post.author.id}`} className="block truncate font-bold leading-tight hover:text-brand">
                 {post.author.name}
               </Link>
-              <p className="text-xs text-ink-soft">
+              <p className="flex flex-wrap items-center gap-x-1.5 text-xs text-ink-soft">
                 <time dateTime={post.created_at}>{timeAgo(post.created_at)}</time>
-                {post.updated_at && <span> · diedit</span>}
+                {post.location && (
+                  <>
+                    <span aria-hidden="true">·</span>
+                    <span className="inline-flex items-center gap-1 font-medium">
+                      <PinIcon /> {post.location}
+                    </span>
+                  </>
+                )}
+                {post.updated_at && (
+                  <>
+                    <span aria-hidden="true">·</span>
+                    <span>diedit</span>
+                  </>
+                )}
               </p>
             </div>
             {isOwner && !editing && (
@@ -85,6 +98,7 @@ export default function PostCard({ post, onChange, onDelete }) {
             <div className="mt-4">
               <EditBox
                 textField="content"
+                limit={500}
                 initialText={post.content}
                 currentImage={post.image}
                 onSave={save}
